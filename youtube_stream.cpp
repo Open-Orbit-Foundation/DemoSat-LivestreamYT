@@ -12,7 +12,7 @@ const std::string YOUTUBE_KEY = "vxhv-sap7-uf1r-m9eu-8y7q";
 // const std::string ffmpeg_cmd = "ffmpeg -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv "
 //                               + YOUTUBE_URL + "/" + YOUTUBE_KEY;
 
-const std::string ffmpeg_cmd = "raspivid -t 0 -w 1280 -h 720 -fps 30 -b 1500000 -o - | "
+const std::string ffmpeg_cmd = "libcamera-vid -t 0 --width 1280 --height 720 --framerate 30 --codec h264 -o - | "
                                "ffmpeg -re -f h264 -i - -vcodec copy -f flv "
                                + YOUTUBE_URL + "/" + YOUTUBE_KEY;
 
