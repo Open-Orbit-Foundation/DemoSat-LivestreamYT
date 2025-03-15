@@ -1,24 +1,20 @@
-// brew install opencv ffmpeg
-// above for *nix systems not including apt
-
-// for raspberry pi probably should use sudo apt install
+// sudo apt install opencv-dev
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <cstdlib> // utilities
-#include <unistd.h> // cross OS compatibility functions, usleep
+#include <cstdlib>
+#include <unistd.h> // usleep
 
 
 const std::string YOUTUBE_URL = "rtmp://b.rtmp.youtube.com/live2";
 const std::string YOUTUBE_KEY = "vxhv-sap7-uf1r-m9eu-8y7q";
 
-
 // const std::string ffmpeg_cmd = "ffmpeg -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -f h264 -i - -vcodec copy -acodec aac -ab 128k -g 50 -strict experimental -f flv "
 //                               + YOUTUBE_URL + "/" + YOUTUBE_KEY;
-const std::string ffmpeg_cmd = "ffmpeg -f rawvideo -pixel_format bgr24 -video_size 640x480 -framerate 24 -i - "
-                               "-f lavfi -i anullsrc -vcodec libx264 -pix_fmt yuv420p -preset ultrafast "
-                               "-tune zerolatency -b:v 1200k -g 50 -acodec aac -b:a 128k -ar 44100 "
-                               "-f flv " + YOUTUBE_URL + "/" + YOUTUBE_KEY;
+
+const std::string ffmpeg_cmd = "raspivid -t 0 -w 1280 -h 720 -fps 30 -b 1500000 -o - | "
+                               "ffmpeg -re -f h264 -i - -vcodec copy -f flv "
+                               + YOUTUBE_URL + "/" + YOUTUBE_KEY;
 
 int main(int argc, char* argv[])
 {
@@ -33,7 +29,6 @@ int main(int argc, char* argv[])
  camera.set(cv::CAP_PROP_FRAME_WIDTH, 640);
  camera.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
  camera.set(cv::CAP_PROP_FPS, 24);
-//  camera.set(cv::CAP_PROP_FOURCC, CV_FOURCC('H', '2', '6', '4'));
 
  // step three: open ffmpeg process
  FILE* ffmpeg = popen(ffmpeg_cmd.c_str(), "w");
@@ -48,7 +43,7 @@ int main(int argc, char* argv[])
  while (true) {
    camera >> frame;
    if (frame.empty()) {
-       continue; // skip empty frames, apparently best practice
+       continue;
    }
 
    // We write to ffmpeg stdin and if it identifies a failure, we stop the process
